@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deadshot Local</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      background-color: #111;
+      color: #fff;
+      font-family: sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    canvas {
+      display: block;
+      border: 2px solid #fff;
+    }
+    .controls {
+      position: absolute;
+      bottom: 10%;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+    .control-btn {
+      width: 60px;
+      height: 60px;
+      margin: 0 10px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .control-btn:active {
+      background-color: rgba(255, 255, 255, 0.6);
+    }
+    #gameCanvas {
+      width: 100%;
+      height: 100%;
+      background: #222;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div class="controls">
+    <div id="left" class="control-btn">←</div>
+    <div id="right" class="control-btn">→</div>
+    <div id="up" class="control-btn">↑</div>
+    <div id="down" class="control-btn">↓</div>
+    <div id="fire" class="control-btn">🔥</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const players = {};
+    const playerId = Math.random().toString(36).substring(2, 9);
+    const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+    const myColor = colors[Math.floor(Math.random() * colors.length)];
+
+    let socket;
+
+    function startGame(room) {
+      socket = new BroadcastChannel(room);
+      socket.onmessage = (e) => {
+        players[e.data.id] = e.data;
+      };
+      setInterval(() => {
+        socket.postMessage({ id: playerId, x: x, y: y, color: myColor });
+      }, 100);
+    }
+
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
+    const speed = 5;
+
+    const keys = {};
+
+    document.getElementById('up').addEventListener('click', () => keys['ArrowUp'] = true);
+    document.getElementById('down').addEventListener('click', () => keys['ArrowDown'] = true);
+    document.getElementById('left').addEventListener('click', () => keys['ArrowLeft'] = true);
+    document.getElementById('right').addEventListener('click', () => keys['ArrowRight'] = true);
+    document.getElementById('fire').addEventListener('click', () => shoot());
+
+    function shoot() {
+      console.log('Atirando...');
+    }
+
+    function update() {
+      if (keys['ArrowUp']) y -= speed;
+      if (keys['ArrowDown']) y += speed;
+      if (keys['ArrowLeft']) x -= speed;
+      if (keys['ArrowRight']) x += speed;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = myColor;
+      ctx.fillRect(x - 10, y - 10, 20, 20);
+      for (let id in players) {
+        if (id !== playerId) {
+          const p = players[id];
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x - 10, p.y - 10, 20, 20);
+        }
+      }
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deadshot Local</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      background-color: #111;
+      color: #fff;
+      font-family: sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    canvas {
+      display: block;
+      border: 2px solid #fff;
+    }
+    .controls {
+      position: absolute;
+      bottom: 10%;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+    .control-btn {
+      width: 60px;
+      height: 60px;
+      margin: 0 10px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .control-btn:active {
+      background-color: rgba(255, 255, 255, 0.6);
+    }
+    #gameCanvas {
+      width: 100%;
+      height: 100%;
+      background: #222;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div class="controls">
+    <div id="left" class="control-btn">←</div>
+    <div id="right" class="control-btn">→</div>
+    <div id="up" class="control-btn">↑</div>
+    <div id="down" class="control-btn">↓</div>
+    <div id="fire" class="control-btn">🔥</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const players = {};
+    const playerId = Math.random().toString(36).substring(2, 9);
+    const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+    const myColor = colors[Math.floor(Math.random() * colors.length)];
+
+    let socket;
+
+    function startGame(room) {
+      socket = new BroadcastChannel(room);
+      socket.onmessage = (e) => {
+        players[e.data.id] = e.data;
+      };
+      setInterval(() => {
+        socket.postMessage({ id: playerId, x: x, y: y, color: myColor });
+      }, 100);
+    }
+
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
+    const speed = 5;
+
+    const keys = {};
+
+    document.getElementById('up').addEventListener('click', () => keys['ArrowUp'] = true);
+    document.getElementById('down').addEventListener('click', () => keys['ArrowDown'] = true);
+    document.getElementById('left').addEventListener('click', () => keys['ArrowLeft'] = true);
+    document.getElementById('right').addEventListener('click', () => keys['ArrowRight'] = true);
+    document.getElementById('fire').addEventListener('click', () => shoot());
+
+    function shoot() {
+      console.log('Atirando...');
+    }
+
+    function update() {
+      if (keys['ArrowUp']) y -= speed;
+      if (keys['ArrowDown']) y += speed;
+      if (keys['ArrowLeft']) x -= speed;
+      if (keys['ArrowRight']) x += speed;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = myColor;
+      ctx.fillRect(x - 10, y - 10, 20, 20);
+      for (let id in players) {
+        if (id !== playerId) {
+          const p = players[id];
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x - 10, p.y - 10, 20, 20);
+        }
+      }
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
